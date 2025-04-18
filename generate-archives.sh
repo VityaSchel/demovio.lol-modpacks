@@ -1,68 +1,46 @@
 modpackver=v3
 
-echo "Creating modpacks archives for version $modpackver"
+create_archive() {
+    local combo="$1"
+    local suffix=""
+    if [[ -n "$combo" ]]; then
+        suffix="_${combo//+/_}"
+    fi
+    local archive="modpacks_archives/required${suffix}_${modpackver}.tar"
+    
+    echo "Creating archive: $archive.gz"
+    tar -cf "$archive" -C mods/required .
+    
+    if [[ -n "$combo" ]]; then
+        IFS='+' read -r -a modsArray <<< "$combo"
+        for mod in "${modsArray[@]}"; do
+            tar -rf "$archive" -C "mods/$mod" .
+        done
+    fi
 
+    gzip "$archive"
+}
+
+echo "Creating modpacks archives for version $modpackver"
 rm -rf ./modpacks_archives
 mkdir modpacks_archives
 
-tar -cf modpacks_archives/tmp_required_$modpackver.tar -C mods/required .
+create_archive ""                  # Required only
+create_archive "base"              # Required + Base
+create_archive "extras"            # Required + Extras
+create_archive "optimizations"     # Required + Optimizations
+create_archive "visual"            # Required + Visual
+create_archive "base+extras"         # Required + Base + Extras
+create_archive "base+optimizations"  # Required + Base + Optimizations
+create_archive "base+visual"         # Required + Base + Visual
+create_archive "extras+optimizations" # Required + Extras + Optimizations
+create_archive "extras+visual"        # Required + Extras + Visual
+create_archive "optimizations+visual" # Required + Optimizations + Visual
+create_archive "base+extras+optimizations"   # Required + Base + Extras + Optimizations
+create_archive "base+extras+visual"          # Required + Base + Extras + Visual
+create_archive "base+optimizations+visual"     # Required + Base + Optimizations + Visual
+create_archive "extras+optimizations+visual"   # Required + Extras + Optimizations + Visual
+create_archive "base+extras+optimizations+visual" # Required + Base + Extras + Optimizations + Visual
 
-echo "[1/8] Base"
-cp modpacks_archives/tmp_required_$modpackver.tar modpacks_archives/base_$modpackver.tar
-tar -rf modpacks_archives/base_$modpackver.tar -C mods/base .
-
-echo "[2/8] Base+Optimizations"
-cp modpacks_archives/base_$modpackver.tar modpacks_archives/base+optimizations_$modpackver.tar
-tar -rf modpacks_archives/base+optimizations_$modpackver.tar -C mods/optimizations .
-
-echo "[2/8] Base+Extras"
-cp modpacks_archives/base_$modpackver.tar modpacks_archives/base+extras_$modpackver.tar
-tar -rf modpacks_archives/base+extras_$modpackver.tar -C mods/extras .
-
-echo "[3/8] Base+Visual"
-cp modpacks_archives/base_$modpackver.tar modpacks_archives/base+visual_$modpackver.tar
-tar -rf modpacks_archives/base+visual_$modpackver.tar -C mods/visual .
-
-echo "[4/8] Base+Optimizations+Extras"
-cp modpacks_archives/base_$modpackver.tar modpacks_archives/base+optimizations+extras_$modpackver.tar
-tar -rf modpacks_archives/base+optimizations+extras_$modpackver.tar -C mods/optimizations .
-tar -rf modpacks_archives/base+optimizations+extras_$modpackver.tar -C mods/extras .
-
-echo "[5/8] Base+Optimizations+Visual"
-cp modpacks_archives/base_$modpackver.tar modpacks_archives/base+optimizations+visual_$modpackver.tar
-tar -rf modpacks_archives/base+optimizations+visual_$modpackver.tar -C mods/optimizations .
-tar -rf modpacks_archives/base+optimizations+visual_$modpackver.tar -C mods/visual .
-
-echo "[6/8] Base+Extras+Visual"
-cp modpacks_archives/base_$modpackver.tar modpacks_archives/base+extras+visual_$modpackver.tar
-tar -rf modpacks_archives/base+extras+visual_$modpackver.tar -C mods/extras .
-tar -rf modpacks_archives/base+extras+visual_$modpackver.tar -C mods/visual .
-
-echo "[7/8] Base+Optimizations+Extras+Visual"
-cp modpacks_archives/base_$modpackver.tar modpacks_archives/base+optimizations+extras+visual_$modpackver.tar
-tar -rf modpacks_archives/base+optimizations+extras+visual_$modpackver.tar -C mods/optimizations .
-tar -rf modpacks_archives/base+optimizations+extras+visual_$modpackver.tar -C mods/extras .
-tar -rf modpacks_archives/base+optimizations+extras+visual_$modpackver.tar -C mods/visual .
-
-printf '%s' "[8/8] Compressing... "
-
-gzip -f modpacks_archives/base_$modpackver.tar
-printf '%s' "12%... "
-gzip -f modpacks_archives/base+optimizations_$modpackver.tar
-printf '%s' "25%... "
-gzip -f modpacks_archives/base+extras_$modpackver.tar
-printf '%s' "37%... "
-gzip -f modpacks_archives/base+visual_$modpackver.tar
-printf '%s' "50%... "
-gzip -f modpacks_archives/base+optimizations+extras_$modpackver.tar
-printf '%s' "62%... "
-gzip -f modpacks_archives/base+optimizations+visual_$modpackver.tar
-printf '%s' "75%... "
-gzip -f modpacks_archives/base+extras+visual_$modpackver.tar
-printf '%s' "87%... "
-gzip -f modpacks_archives/base+optimizations+extras+visual_$modpackver.tar
-echo "100%"
-
-rm modpacks_archives/tmp_required_$modpackver.tar
 
 echo "Operation finished: ./modpacks_archives/"
