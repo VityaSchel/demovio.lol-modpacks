@@ -1,0 +1,4 @@
+*
+!*.gitignore
+!*.jar
+# This is for mods that for some reason place their data into server/mods directory like EasyAuth
